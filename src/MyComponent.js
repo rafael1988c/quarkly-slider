@@ -1,7 +1,27 @@
 import React, { useState, useEffect } from 'react';
 
 import atomize from '@quarkly/atomize';
+import { useOverrides } from '@quarkly/components';
 import { Box, Icon } from '@quarkly/widgets';
+
+const overrides = {
+	'Arrow prev icon': {
+		'kind': 'Icon',
+		'props': {
+			'size': '52px',
+			'category': 'md',
+			'icon': 'MdKeyboardArrowLeft',
+		}
+	},
+	'Arrow next icon': {
+		'kind': 'Icon',
+		'props': {
+			'size': '52px',
+			'category': 'md',
+			'icon': 'MdKeyboardArrowRight',
+		}
+	},
+};
 
 const Image = atomize.img();
 
@@ -75,9 +95,11 @@ const Slide = ({src, numb, height, duration, opts}) => {
 	);
 }
 
-const Arrow = ({ type, color, alpha, click }) => {
+const Arrow = ({type, color, alpha, click, override}) => {
 	return (
 		<Box
+			{...override(`Arrow ${type}`)}
+			
 			onClick={click}
 			
 			top="0"
@@ -108,22 +130,23 @@ const Arrow = ({ type, color, alpha, click }) => {
 			hover-opacity="1"
 		>
 			<Icon
-				size="52px"
-				category="md"
-				icon={`MdKeyboardArrow${type === 'prev' ? 'Left' : 'Right'}`}
+				{...override(`Arrow ${type} icon`)}
 				color={color || '#EEEEEE'}
 			/>
 		</Box>
 	)
 }
 
-const Point = ({ numb, color, alpha, opts, click }) => {
+const Point = ({numb, color, alpha, opts, click, override}) => {
 	const isTarget = numb === opts.target;
 	
 	return (
 		<Box
+			{...override(`Point ${numb}`)}
+			
 			onClick={click}
 			
+			margin="0"
 			width="1rem"
 			height="1rem"
 			border="none"
@@ -140,6 +163,8 @@ const Point = ({ numb, color, alpha, opts, click }) => {
 			hover-opacity="1"
 		>
 			<Box
+				{...override(`Point ${numb} dot`)}
+				
 				top="calc(50% - .5rem)"
 				left="calc(50% - .5rem)"
 				width=".75rem"
@@ -167,6 +192,8 @@ const Slider = ({
 	alphaPoints,
 	...props
 }) => {
+	const { override, rest } = useOverrides(props, overrides);
+	
 	const [srcs] = useState(slides.length > 0 ? slides.split(',').reverse() : []);
 	
 	const [active, setActive] = useState(1);
@@ -239,9 +266,7 @@ const Slider = ({
 	}
 	
 	return (
-		<Box      
-			{...props}
-		>
+		<Box {...rest}>
 			<Box
 				width="100%"
 				position="relative"
@@ -279,15 +304,19 @@ const Slider = ({
 					click={() => slidePrev()}
 					color={colorArrows}
 					alpha={alphaArrows}
+					override={override}
 				/>
 				<Arrow
 					type="next"
 					click={() => slideNext()}
 					color={colorArrows}
 					alpha={alphaArrows}
+					override={override}
 				/>
 			</Box>
 			<Box
+				{...override('Points')}
+				
 				bottom=".5rem"
 				left="0"
 				width="100%"
@@ -308,6 +337,7 @@ const Slider = ({
 						color={colorPoints}
 						alpha={alphaPoints}
 						opts={{ target }}
+						override={override}
 					/>
 				))}
 			</Box>
@@ -388,6 +418,7 @@ export default Object.assign(Slider, {
 	description: {
 		en: 'Awesome swipe slider!',
 	},
+	overrides,
 	propInfo,
 	defaultProps,
 });
